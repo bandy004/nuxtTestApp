@@ -1,53 +1,91 @@
 <template>
   <v-container>
-    <v-card flex>
-      <span>
-        Configure Columns
-        <v-icon @click="menuShow" large color="green darken-2">
-          mdi-domain
-        </v-icon>
-      </span>
-      <v-row v-if="!hidemenu">
-        <v-col
-          cols="2"
-          v-for="h in actualHeader"
-          :key="h.vlaue"
-          v-show="h.value != 'name'"
-        >
-          <v-checkbox
-            v-model="showHeader"
-            :value="h.value"
-            :label="h.value"
-          ></v-checkbox>
-        </v-col>
-      </v-row>
-    </v-card>
-    <v-card>
-      <v-data-table :items="items" :headers="headers">
-        <template #item.name="{ item, header, value }">
-          <div style="display: inline">
-            <span style="width: 25px; display: inline-block">
-              <v-icon v-if="item.children.length > 0" @click="show(item)">
-                {{ getIcon(item) }}
+    <v-row>
+      <v-col cols="12">
+        <v-card flat>
+          <v-row justify="center">
+            <span>
+              Configure Columns
+              <v-icon @click="menuShow" large color="green darken-2">
+                mdi-cog
               </v-icon>
-              <!-- <v-icon v-else>mdi-minus</v-icon> -->
+              <v-divider class="mx-4" vertical></v-divider>
+              Show all rows
+              <v-icon @click="expandAll" large color="blue darken-2">
+                mdi-plus-circle
+              </v-icon>
+              <v-divider class="mx-4" vertical color="black"></v-divider>
+              Show only top level rows
+              <v-icon @click="collapseAll" large color="red darken-2">
+                mdi-minus-circle
+              </v-icon>
             </span>
-            <!-- display: inline; margin-left: 10px"> -->
-            <span :style="getPadding(item)">
-              {{ value }}
-            </span>
-          </div>
-        </template>
-      </v-data-table>
-    </v-card>
+            <v-divider class="mx-4" vertical></v-divider>
+          </v-row>
+          <v-row v-if="!hidemenu">
+            <v-col
+              cols="1"
+              v-for="h in actualHeader"
+              :key="h.vlaue"
+              v-show="h.value != 'name'"
+            >
+              <v-checkbox
+                v-model="showHeader"
+                :value="h.value"
+                :label="h.text"
+              ></v-checkbox>
+            </v-col>
+          </v-row>
+        </v-card>
+      </v-col>
+    </v-row>
+    <v-row>
+      <v-col cols="12">
+        <v-card flat>
+          <v-data-table :items="items" :headers="headers">
+            <template #item.name="{ item, header, value }">
+              <div style="display: inline">
+                <span style="width: 25px; display: inline-block">
+                  <v-icon v-if="item.children.length > 0" @click="show(item)">
+                    {{ getIcon(item) }}
+                  </v-icon>
+                  <!-- <v-icon v-else>mdi-minus</v-icon> -->
+                </span>
+                <!-- display: inline; margin-left: 10px"> -->
+                <span :style="getPadding(item)">
+                  {{ value }}
+                </span>
+              </div>
+            </template>
+            <template #item.actions="{ item }">
+              <v-btn class="primary">Add</v-btn>
+            </template>
+            <template #item.tags="{ item }">
+              <v-btn v-for="t in item.tags" class="primary mx-2">
+                {{ t }}
+              </v-btn>
+            </template>
+          </v-data-table>
+        </v-card>
+      </v-col>
+    </v-row>
   </v-container>
 </template>
 <script>
 export default {
   data() {
     return {
-      showHeader: ["name", "calories", "fat", "carbs", "protein", "iron"],
-      hidemenu: false,
+      showHeader: [
+        "name",
+        "calories",
+        "fat",
+        "carbs",
+        "protein",
+        "iron",
+        "actions",
+        "tags",
+      ],
+      hidemenu: true,
       actualHeader: [
         {
           text: "Dessert (100g serving)",
@@ -60,55 +98,58 @@ export default {
         { text: "Carbs (g)", value: "carbs" },
         { text: "Protein (g)", value: "protein" },
         { text: "Iron (%)", value: "iron" },
+        { text: "Tags", value: "tags" },
+        { text: "Actions", value: "actions" },
       ],
       headers: this.actualHeader,
       allitems: [
         {
-          name: "1. Frozen Yogurt",
+          name: "Frozen Yogurt",
           calories: 159,
           fat: 6.0,
           carbs: 24,
           protein: 4.0,
           iron: "1%",
-          children: ["1.1 Ice cream sandwich", "1.2 Eclair", "1.3 Cupcake"],
+          children: ["Ice cream sandwich", "Eclair", "Cupcake"],
           parent: "",
-          display: false,
+          display: true,
           padding: 0,
+          tags: ["Tag-1", "Tag-2"],
         },
         {
-          name: "1.1 Ice cream sandwich",
+          name: "Ice cream sandwich",
           calories: 237,
           fat: 9.0,
           carbs: 37,
           protein: 4.3,
           iron: "1%",
           children: [],
-          parent: "1. Frozen Yogurt",
-          display: false,
+          parent: "Frozen Yogurt",
+          display: true,
           padding: 10,
         },
         {
-          name: "1.2 Eclair",
+          name: "Eclair",
           calories: 262,
           fat: 16.0,
           carbs: 23,
           protein: 6.0,
           iron: "7%",
           children: [],
-          parent: "1. Frozen Yogurt",
-          display: false,
+          parent: "Frozen Yogurt",
+          display: true,
           padding: 10,
         },
         {
-          name: "1.3 Cupcake",
+          name: "Cupcake",
           calories: 305,
           fat: 3.7,
           carbs: 67,
           protein: 4.3,
           iron: "8%",
-          children: ["1.3.1 Donut", "1.3.2 KitKat"],
-          parent: "1. Frozen Yogurt",
-          display: false,
+          children: ["Donut", "KitKat"],
+          parent: "Frozen Yogurt",
+          display: true,
           padding: 10,
         },
         {
@@ -120,7 +161,7 @@ export default {
           iron: "16%",
           children: [],
           parent: "",
-          display: false,
+          display: true,
           padding: 0,
         },
         {
@@ -132,7 +173,7 @@ export default {
           iron: "0%",
           children: [],
           parent: "",
-          display: false,
+          display: true,
           padding: 0,
         },
         {
@@ -143,9 +184,9 @@ export default {
           protein: 0,
           iron: "2%",
           children: [],
-          parent: "",
-          display: false,
-          padding: 0,
+          parent: "KitKat",
+          display: true,
+          padding: 30,
         },
         {
           name: "Honeycomb",
@@ -155,32 +196,32 @@ export default {
           protein: 6.5,
           iron: "45%",
           children: [],
-          parent: "",
-          display: false,
-          padding: 0,
+          parent: "KitKat",
+          display: true,
+          padding: 30,
         },
         {
-          name: "1.3.1 Donut",
+          name: "Donut",
           calories: 452,
           fat: 25.0,
           carbs: 51,
           protein: 4.9,
           iron: "22%",
           children: [],
-          parent: "1.3 Cupcake",
-          display: false,
+          parent: "Cupcake",
+          display: true,
           padding: 20,
         },
         {
-          name: "1.3.2 KitKat",
+          name: "KitKat",
           calories: 518,
           fat: 26.0,
           carbs: 65,
           protein: 7,
           iron: "6%",
-          children: [],
-          parent: "1.3 Cupcake",
-          display: false,
+          children: ["Honeycomb", "Lollipop"],
+          parent: "Cupcake",
+          display: true,
           padding: 20,
         },
       ],
@@ -200,11 +241,7 @@ export default {
   },
   mounted() {
     this.headers = JSON.parse(JSON.stringify(this.actualHeader));
-    for (var i in this.allitems) {
-      if (this.allitems[i].parent == "") {
-        this.items.push(this.allitems[i]);
-      }
-    }
+    this.expandAll();
   },
   methods: {
     menuShow(val) {
@@ -214,12 +251,13 @@ export default {
       var itemIndex = this.items.indexOf(item);
       if (item.display) {
         //hide all its childrenren in the sub-tree
-        var allchildren = this.getAllchildrenren(item, []);
+        var allchildren = this.getAllChildren(item, []);
         for (var c in allchildren) {
           for (var i in this.items) {
             if (allchildren[c] == this.items[i].name) {
               this.items.splice(i, 1);
               this.items[i].display = false;
+              break;
             }
           }
         }
@@ -249,7 +287,7 @@ export default {
       //   return "pl-" + item.padding;
       return "display: inline; margin-left:" + item.padding + "px;";
     },
-    getAllchildrenren(item, allChildren) {
+    getAllChildren(item, allChildren) {
       for (var c in item.children) {
         allChildren.push(item.children[c]);
         var childrenItem = null;
@@ -258,9 +296,40 @@ export default {
             childrenItem = this.allitems[x];
           }
         }
-        this.getAllchildrenren(childrenItem, allChildren);
+        this.getAllChildren(childrenItem, allChildren);
       }
       return allChildren;
+    },
+    collapseAll() {
+      for (var i in this.items) {
+        this.items[i].display = false;
+      }
+      this.items = [];
+      for (var i in this.allitems) {
+        if (this.allitems[i].parent == "") {
+          this.items.push(this.allitems[i]);
+        }
+      }
+    },
+    expandAll() {
+      for (var i in this.items) {
+        this.items[i].display = false;
+      }
+      this.items = [];
+      for (var i in this.allitems) {
+        if (this.allitems[i].parent == "") {
+          this.items.push(this.allitems[i]);
+          this.allitems[i].display = true;
+          var allChildren = this.getAllChildren(this.allitems[i], []);
+          for (var k in allChildren) {
+            for (var j in this.allitems) {
+              if (allChildren[k] == this.allitems[j].name) {
+                this.items.push(this.allitems[j]);
+              }
+            }
+          }
+        }
+      }
     },
   },
   computed: {},
