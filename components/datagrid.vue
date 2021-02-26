@@ -1,10 +1,13 @@
 <template>
   <v-container>
     <v-card flex>
-      <v-row>
-        <v-col>
-          <v-subheader class="mx-5 pa-5"> Columns </v-subheader>
-        </v-col>
+      <span>
+        Configure Columns
+        <v-icon @click="menuShow" large color="green darken-2">
+          mdi-domain
+        </v-icon>
+      </span>
+      <v-row v-if="!hidemenu">
         <v-col
           cols="2"
           v-for="h in actualHeader"
@@ -24,7 +27,7 @@
         <template #item.name="{ item, header, value }">
           <div style="display: inline">
             <span style="width: 25px; display: inline-block">
-              <v-icon v-if="item.child.length > 0" @click="show(item)">
+              <v-icon v-if="item.children.length > 0" @click="show(item)">
                 {{ getIcon(item) }}
               </v-icon>
               <!-- <v-icon v-else>mdi-minus</v-icon> -->
@@ -44,7 +47,7 @@ export default {
   data() {
     return {
       showHeader: ["name", "calories", "fat", "carbs", "protein", "iron"],
-
+      hidemenu: false,
       actualHeader: [
         {
           text: "Dessert (100g serving)",
@@ -67,7 +70,7 @@ export default {
           carbs: 24,
           protein: 4.0,
           iron: "1%",
-          child: ["1.1 Ice cream sandwich", "1.2 Eclair", "1.3 Cupcake"],
+          children: ["1.1 Ice cream sandwich", "1.2 Eclair", "1.3 Cupcake"],
           parent: "",
           display: false,
           padding: 0,
@@ -79,7 +82,7 @@ export default {
           carbs: 37,
           protein: 4.3,
           iron: "1%",
-          child: [],
+          children: [],
           parent: "1. Frozen Yogurt",
           display: false,
           padding: 10,
@@ -91,7 +94,7 @@ export default {
           carbs: 23,
           protein: 6.0,
           iron: "7%",
-          child: [],
+          children: [],
           parent: "1. Frozen Yogurt",
           display: false,
           padding: 10,
@@ -103,7 +106,7 @@ export default {
           carbs: 67,
           protein: 4.3,
           iron: "8%",
-          child: ["1.3.1 Donut", "1.3.2 KitKat"],
+          children: ["1.3.1 Donut", "1.3.2 KitKat"],
           parent: "1. Frozen Yogurt",
           display: false,
           padding: 10,
@@ -115,7 +118,7 @@ export default {
           carbs: 49,
           protein: 3.9,
           iron: "16%",
-          child: [],
+          children: [],
           parent: "",
           display: false,
           padding: 0,
@@ -127,7 +130,7 @@ export default {
           carbs: 94,
           protein: 0.0,
           iron: "0%",
-          child: [],
+          children: [],
           parent: "",
           display: false,
           padding: 0,
@@ -139,7 +142,7 @@ export default {
           carbs: 98,
           protein: 0,
           iron: "2%",
-          child: [],
+          children: [],
           parent: "",
           display: false,
           padding: 0,
@@ -151,7 +154,7 @@ export default {
           carbs: 87,
           protein: 6.5,
           iron: "45%",
-          child: [],
+          children: [],
           parent: "",
           display: false,
           padding: 0,
@@ -163,7 +166,7 @@ export default {
           carbs: 51,
           protein: 4.9,
           iron: "22%",
-          child: [],
+          children: [],
           parent: "1.3 Cupcake",
           display: false,
           padding: 20,
@@ -175,7 +178,7 @@ export default {
           carbs: 65,
           protein: 7,
           iron: "6%",
-          child: [],
+          children: [],
           parent: "1.3 Cupcake",
           display: false,
           padding: 20,
@@ -204,14 +207,17 @@ export default {
     }
   },
   methods: {
+    menuShow(val) {
+      this.hidemenu = !this.hidemenu;
+    },
     show(item) {
       var itemIndex = this.items.indexOf(item);
       if (item.display) {
-        //hide all its children in the sub-tree
-        var allChild = this.getAllChildren(item, []);
-        for (var c in allChild) {
+        //hide all its childrenren in the sub-tree
+        var allchildren = this.getAllchildrenren(item, []);
+        for (var c in allchildren) {
           for (var i in this.items) {
-            if (allChild[c] == this.items[i].name) {
+            if (allchildren[c] == this.items[i].name) {
               this.items.splice(i, 1);
               this.items[i].display = false;
             }
@@ -219,10 +225,10 @@ export default {
         }
         item.display = false;
       } else {
-        // show immidiate children
-        for (var c in item.child) {
+        // show immidiate childrenren
+        for (var c in item.children) {
           for (var i in this.allitems) {
-            if (item.child[c] == this.allitems[i].name) {
+            if (item.children[c] == this.allitems[i].name) {
               this.items.splice(itemIndex + 1, 0, this.allitems[i]);
               itemIndex = this.items.indexOf(this.allitems[i]);
             }
@@ -243,18 +249,18 @@ export default {
       //   return "pl-" + item.padding;
       return "display: inline; margin-left:" + item.padding + "px;";
     },
-    getAllChildren(item, children) {
-      for (var c in item.child) {
-        children.push(item.child[c]);
-        var childItem = null;
+    getAllchildrenren(item, allChildren) {
+      for (var c in item.children) {
+        allChildren.push(item.children[c]);
+        var childrenItem = null;
         for (var x in this.allitems) {
-          if (this.allitems[x].name == item.child[c]) {
-            childItem = this.allitems[x];
+          if (this.allitems[x].name == item.children[c]) {
+            childrenItem = this.allitems[x];
           }
         }
-        this.getAllChildren(childItem, children);
+        this.getAllchildrenren(childrenItem, allChildren);
       }
-      return children;
+      return allChildren;
     },
   },
   computed: {},
