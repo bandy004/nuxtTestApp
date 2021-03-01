@@ -57,7 +57,7 @@
         <v-card flat>
           <v-data-table :items="items" :headers="headers">
             <template #item.name="{ item, header, value }">
-              <div style="display: inline">
+              <div style="display: inline; width: 10px">
                 <!-- style="width: 25px; display: inline-block"> -->
                 <span :style="getPadding(item)">
                   <v-icon v-if="item.children.length > 0" @click="show(item)">
@@ -72,10 +72,12 @@
               </div>
             </template>
             <template #item.actions="{ item }">
-              <v-btn class="primary">Add</v-btn>
+              <v-btn class="primary" small icon dark
+                ><v-icon small>mdi-pencil</v-icon></v-btn
+              >
             </template>
             <template #item.tags="{ item }">
-              <v-btn v-for="t in item.tags" class="primary mx-2">
+              <v-btn v-for="t in item.tags" :key="t" small class="primary mx-1">
                 {{ t }}
               </v-btn>
             </template>
