@@ -3,24 +3,40 @@
     <v-row>
       <v-col cols="12">
         <v-card flat>
-          <v-row justify="center">
+          <v-row justify="left">
             <span>
-              Configure Columns
-              <v-icon @click="menuShow" large color="green darken-2">
+              <v-divider class="mx-2" vertical></v-divider>
+              Configure
+              <v-icon
+                @click="menuShow"
+                large
+                color="green darken-2"
+                class="ml-2 mr-2"
+              >
                 mdi-cog
               </v-icon>
-              <v-divider class="mx-4" vertical></v-divider>
-              Show all rows
-              <v-icon @click="expandAll" large color="blue darken-2">
-                mdi-plus-circle
+              <v-divider class="mx-2" vertical></v-divider>
+              Expand
+              <v-icon
+                @click="expandAll"
+                large
+                color="blue darken-2"
+                class="ml-2 mr-2"
+              >
+                mdi-arrow-expand-vertical
               </v-icon>
-              <v-divider class="mx-4" vertical color="black"></v-divider>
-              Show only top level rows
-              <v-icon @click="collapseAll" large color="red darken-2">
-                mdi-minus-circle
+              <v-divider class="mx-2" vertical color="black"></v-divider>
+              Collapse
+              <v-icon
+                @click="collapseAll"
+                large
+                color="red darken-2"
+                class="ml-2 mr-2"
+              >
+                mdi-arrow-collapse-vertical
               </v-icon>
             </span>
-            <v-divider class="mx-4" vertical></v-divider>
+            <v-divider class="mx-2" vertical></v-divider>
           </v-row>
           <v-row v-if="!hidemenu">
             <v-col
