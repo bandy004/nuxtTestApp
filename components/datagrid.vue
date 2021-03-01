@@ -9,7 +9,6 @@
               Configure
               <v-icon
                 @click="menuShow"
-                large
                 color="green darken-2"
                 class="ml-2 mr-2"
               >
@@ -19,7 +18,6 @@
               Expand
               <v-icon
                 @click="expandAll"
-                large
                 color="blue darken-2"
                 class="ml-2 mr-2"
               >
@@ -29,7 +27,6 @@
               Collapse
               <v-icon
                 @click="collapseAll"
-                large
                 color="red darken-2"
                 class="ml-2 mr-2"
               >
