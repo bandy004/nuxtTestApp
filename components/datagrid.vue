@@ -45,14 +45,15 @@
           <v-data-table :items="items" :headers="headers">
             <template #item.name="{ item, header, value }">
               <div style="display: inline">
-                <span style="width: 25px; display: inline-block">
+                <!-- style="width: 25px; display: inline-block"> -->
+                <span :style="getPadding(item)">
                   <v-icon v-if="item.children.length > 0" @click="show(item)">
                     {{ getIcon(item) }}
                   </v-icon>
-                  <!-- <v-icon v-else>mdi-minus</v-icon> -->
+                  <v-icon v-else color="white">mdi-minus</v-icon>
                 </span>
-                <!-- display: inline; margin-left: 10px"> -->
-                <span :style="getPadding(item)">
+                <!-- display: inline; margin-left: 10px"> :style="getPadding(item)"> -->
+                <span>
                   {{ value }}
                 </span>
               </div>
@@ -87,6 +88,7 @@ export default {
       ],
       hidemenu: true,
       actualHeader: [
+        // { text: "Display", value: "display" },
         {
           text: "Dessert (100g serving)",
           align: "start",
@@ -110,7 +112,7 @@ export default {
           carbs: 24,
           protein: 4.0,
           iron: "1%",
-          children: ["Ice cream sandwich", "Eclair", "Cupcake"],
+          children: ["Cupcake", "Eclair", "Ice cream sandwich"],
           parent: "",
           display: true,
           padding: 0,
@@ -252,28 +254,38 @@ export default {
       if (item.display) {
         //hide all its childrenren in the sub-tree
         var allchildren = this.getAllChildren(item, []);
+
         for (var c in allchildren) {
-          for (var i in this.items) {
-            if (allchildren[c] == this.items[i].name) {
-              this.items.splice(i, 1);
-              this.items[i].display = false;
-              break;
-            }
+          var ch = allchildren[c];
+          var index_item = this.items.indexOf(ch);
+          if (index_item > -1) {
+            ch.display = false;
+            this.items.splice(index_item, 1);
           }
         }
         item.display = false;
       } else {
         // show immidiate childrenren
-        for (var c in item.children) {
-          for (var i in this.allitems) {
-            if (item.children[c] == this.allitems[i].name) {
-              this.items.splice(itemIndex + 1, 0, this.allitems[i]);
-              itemIndex = this.items.indexOf(this.allitems[i]);
-            }
-          }
-        }
-        item.display = true;
+        this.expandItem(item, false);
       }
+    },
+    expandItem(item, all) {
+      var itemIndex = this.items.indexOf(item);
+      for (var c in item.children) {
+        var ch = this.allitems.find((v) => {
+          return v.name == item.children[c];
+        });
+        //console.log("Adding = ", ch.name, "@", itemIndex + 1, ch.display);
+        this.items.splice(itemIndex + 1, 0, ch);
+
+        if (all) {
+          itemIndex = this.expandItem(ch, all);
+        } else {
+          itemIndex = itemIndex + 1; //this.items.indexOf(this.allitems[i]);
+        }
+      }
+      item.display = true;
+      return itemIndex;
     },
     getIcon(item) {
       if (item.display) {
@@ -287,49 +299,57 @@ export default {
       //   return "pl-" + item.padding;
       return "display: inline; margin-left:" + item.padding + "px;";
     },
+
     getAllChildren(item, allChildren) {
       for (var c in item.children) {
-        allChildren.push(item.children[c]);
-        var childrenItem = null;
-        for (var x in this.allitems) {
-          if (this.allitems[x].name == item.children[c]) {
-            childrenItem = this.allitems[x];
-          }
+        var childrenItem = this.allitems.find((v) => {
+          return v.name == item.children[c];
+        });
+        if (childrenItem != null) {
+          allChildren.push(childrenItem);
+          this.getAllChildren(childrenItem, allChildren);
         }
-        this.getAllChildren(childrenItem, allChildren);
       }
       return allChildren;
     },
     collapseAll() {
-      for (var i in this.items) {
-        this.items[i].display = false;
-      }
-      this.items = [];
-      for (var i in this.allitems) {
-        if (this.allitems[i].parent == "") {
-          this.items.push(this.allitems[i]);
-        }
-      }
+      this.items.map((v) => {
+        v.display = false;
+      });
+
+      this.items = this.allitems.filter((v) => {
+        return v.parent == "";
+      });
     },
     expandAll() {
-      for (var i in this.items) {
-        this.items[i].display = false;
+      this.collapseAll();
+      var parents = this.allitems.filter((v) => {
+        return v.parent == "";
+      });
+      for (var i in parents) {
+        this.expandItem(parents[i], true);
       }
-      this.items = [];
-      for (var i in this.allitems) {
-        if (this.allitems[i].parent == "") {
-          this.items.push(this.allitems[i]);
-          this.allitems[i].display = true;
-          var allChildren = this.getAllChildren(this.allitems[i], []);
-          for (var k in allChildren) {
-            for (var j in this.allitems) {
-              if (allChildren[k] == this.allitems[j].name) {
-                this.items.push(this.allitems[j]);
-              }
-            }
-          }
-        }
-      }
+      // this.items.map((v) => {
+      //   v.display = false;
+      // });
+      // this.items = [];
+      // for (var i in this.allitems) {
+      //   if (this.allitems[i].parent == "") {
+      //     this.items.push(this.allitems[i]);
+      //     this.allitems[i].display = true;
+      //     var allChildren = this.getAllChildren(this.allitems[i], []);
+      //     for (var k in allChildren) {
+      //       var ch = this.allitems.find((v) => {
+      //         return v.name == allChildren[k];
+      //       });
+      //       this.items.push(ch);
+      //       var parentv = this.allitems.find((v) => {
+      //         return v.name == ch.parent;
+      //       });
+      //       parentv.display = true;
+      //     }
+      //   }
+      // }
     },
   },
   computed: {},
