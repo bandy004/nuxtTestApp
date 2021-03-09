@@ -113,6 +113,9 @@
               <v-btn class="primary" small icon dark @click="editItem(item)"
                 ><v-icon small>mdi-pencil</v-icon></v-btn
               >
+              <v-btn class="primary" small icon dark @click="childItem(item)"
+                ><v-icon small>mdi-repeat</v-icon></v-btn
+              >
             </template>
             <template #item.tags="{ item }">
               <v-btn v-for="t in item.tags" :key="t" small class="primary mx-1">
@@ -256,7 +259,7 @@ export default {
       }
     },
     save() {
-      console.log("Emmiting Save--- datagrid element");
+      //console.log("Emmiting Save--- datagrid element");
       this.$emit("save");
       this.dialog = false;
     },
@@ -267,6 +270,11 @@ export default {
     },
     editItem(item) {
       this.editedItem = Object.assign({}, item);
+      this.dialog = true;
+    },
+    childItem(item) {
+      this.editedItem = Object.assign({}, this.defaultItem);
+      this.editedItem.parent = item.name;
       this.dialog = true;
     },
     delItem(item) {

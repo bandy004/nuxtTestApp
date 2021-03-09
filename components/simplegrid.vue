@@ -108,7 +108,7 @@ export default {
       this.$emit("selection", this.selectedItem);
     },
     save() {
-      console.log("Emmiting Save--- simplegrid element");
+      //console.log("Emmiting Save--- simplegrid element");
       this.$emit("save");
       this.dialog = false;
       this.dialogDelete = false;

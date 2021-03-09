@@ -53,7 +53,7 @@ export default {
   },
   created() {
     this.editedItem = JSON.parse(JSON.stringify(this.item)); //Object.assign({}, this.item);
-    console.log("XXX", this.editedItem);
+    //console.log("XXX", this.editedItem);
   },
   methods: {
     close() {
@@ -72,7 +72,7 @@ export default {
       //this.$emit("save");
       //this.editedItem = JSON.parse(JSON.stringify(this.item));
       if (resp != null) {
-        console.log("Emmiting Save--- InvDiag");
+        //console.log("Emmiting Save--- InvDiag");
         this.$emit("save");
         this.editedItem = JSON.parse(JSON.stringify(this.item));
       }

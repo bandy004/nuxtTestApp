@@ -70,7 +70,7 @@ export default {
       this.dialog = false;
     },
     save() {
-      console.log("Emmiting Save--- dig element");
+      //console.log("Emmiting Save--- dig element");
       this.$emit("save");
       this.dialog = false;
     },

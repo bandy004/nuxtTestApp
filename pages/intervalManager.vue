@@ -1,6 +1,7 @@
 <template>
   <v-card flat>
     <v-btn @click="showDep = !showDep" color="primary">Show Dependecy</v-btn>
+    <v-btn @click="reset" color="primary">Reset</v-btn>
     <v-row>
       <v-col :cols="displayInterval">
         <datagrid
@@ -128,8 +129,15 @@ export default {
         this.dependencies.push(depdResp.data[d]);
       }
     },
+    async reset() {
+      const depdResp = await this.$axios.get("http://localhost:8000/reset");
+      if (depdResp != null) {
+        this.loadIntervals();
+        this.laodDependencies();
+      }
+    },
     save() {
-      console.log("Emmiting Save--- int Manager");
+      //console.log("Emmiting Save--- int Manager");
       this.loadIntervals();
       this.laodDependencies();
     },
