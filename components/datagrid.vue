@@ -3,7 +3,7 @@
     <v-row>
       <v-col cols="12">
         <v-card flat>
-          <v-row justify="left">
+          <v-row justify="center">
             <span>
               <v-divider class="mx-2" vertical></v-divider>
               Configure
@@ -37,7 +37,7 @@
           </v-row>
           <v-row v-if="!hidemenu">
             <v-col
-              cols="1"
+              cols="2"
               v-for="h in actualHeader"
               :key="h.vlaue"
               v-show="h.value != 'name'"
@@ -55,7 +55,45 @@
     <v-row>
       <v-col cols="12">
         <v-card flat>
-          <v-data-table :items="items" :headers="headers">
+          <v-data-table :items="items" :headers="headers" :search="searchText">
+            <template v-slot:top>
+              <v-toolbar flat>
+                <v-toolbar-title>{{ name }} </v-toolbar-title>
+                <v-divider class="mx-4" inset vertical></v-divider>
+                <v-text-field
+                  v-model="searchText"
+                  class="mx-4 pt-4"
+                  label="search"
+                >
+                </v-text-field>
+                <v-spacer></v-spacer>
+                <dialogelements
+                  :show="dialog"
+                  :item="defaultItem"
+                  formTitle="New"
+                  :edit="false"
+                  :type="type"
+                  @close="close"
+                  @save="save"
+                />
+                <dialogelements
+                  v-if="dialog"
+                  :show="true"
+                  :edit="true"
+                  :item="editedItem"
+                  formTitle="Edit"
+                  :type="type"
+                  @close="close"
+                  @save="save"
+                />
+                <dialogelementdelete
+                  v-if="dialogDelete"
+                  :type="type"
+                  :item="editedItem"
+                  @close="close"
+                />
+              </v-toolbar>
+            </template>
             <template #item.name="{ item, header, value }">
               <div style="display: inline; width: 10px">
                 <!-- style="width: 25px; display: inline-block"> -->
@@ -72,7 +110,7 @@
               </div>
             </template>
             <template #item.actions="{ item }">
-              <v-btn class="primary" small icon dark
+              <v-btn class="primary" small icon dark @click="editItem(item)"
                 ><v-icon small>mdi-pencil</v-icon></v-btn
               >
             </template>
@@ -88,11 +126,22 @@
   </v-container>
 </template>
 <script>
+import dialogelements from "@/components/dialogelements";
+import dialogelementdelete from "@/components/dialogelementdelete";
 export default {
+  components: {
+    dialogelements,
+    dialogelementdelete,
+  },
   props: {
     actualHeader: Array,
     allitems: Array,
     showHeader: Array,
+    name: String,
+    type: String,
+    defaultItem: Object,
+    edit: Boolean,
+    del: Boolean,
   },
   data() {
     return {
@@ -100,6 +149,10 @@ export default {
       hidemenu: true,
       headers: this.actualHeader,
       items: [],
+      dialog: false,
+      searchText: "",
+      dialogDelete: false,
+      editedItem: null,
     };
   },
   watch: {
@@ -112,6 +165,9 @@ export default {
       }
       this.headers = newHeaders;
     },
+    allitems(val) {
+      this.expandAll();
+    },
   },
   mounted() {
     this.displayHeaders = this.showHeader;
@@ -122,7 +178,6 @@ export default {
       this.hidemenu = !this.hidemenu;
     },
     show(item) {
-      var itemIndex = this.items.indexOf(item);
       if (item.display) {
         //hide all its childrenren in the sub-tree
         var allchildren = this.getAllChildren(item, []);
@@ -153,7 +208,7 @@ export default {
         if (all) {
           itemIndex = this.expandItem(ch, all);
         } else {
-          itemIndex = itemIndex + 1; //this.items.indexOf(this.allitems[i]);
+          itemIndex = itemIndex + 1;
         }
       }
       item.display = true;
@@ -167,8 +222,6 @@ export default {
       }
     },
     getPadding(item) {
-      //console.log("pl-" + item.padding);
-      //   return "pl-" + item.padding;
       return "display: inline; margin-left:" + item.padding + "px;";
     },
 
@@ -201,27 +254,25 @@ export default {
       for (var i in parents) {
         this.expandItem(parents[i], true);
       }
-      // this.items.map((v) => {
-      //   v.display = false;
-      // });
-      // this.items = [];
-      // for (var i in this.allitems) {
-      //   if (this.allitems[i].parent == "") {
-      //     this.items.push(this.allitems[i]);
-      //     this.allitems[i].display = true;
-      //     var allChildren = this.getAllChildren(this.allitems[i], []);
-      //     for (var k in allChildren) {
-      //       var ch = this.allitems.find((v) => {
-      //         return v.name == allChildren[k];
-      //       });
-      //       this.items.push(ch);
-      //       var parentv = this.allitems.find((v) => {
-      //         return v.name == ch.parent;
-      //       });
-      //       parentv.display = true;
-      //     }
-      //   }
-      // }
+    },
+    save() {
+      console.log("Emmiting Save--- datagrid element");
+      this.$emit("save");
+      this.dialog = false;
+    },
+    close() {
+      //alert("Cancel Called");
+      this.dialog = false;
+      this.dialogDelete = false;
+    },
+    editItem(item) {
+      this.editedItem = Object.assign({}, item);
+      this.dialog = true;
+    },
+    delItem(item) {
+      this.editedItem = Object.assign({}, item);
+      //console.log("Deleting", this.editedItem);
+      this.dialogDelete = true;
     },
   },
   computed: {},
