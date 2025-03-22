@@ -1,288 +1,283 @@
 <template>
-  <v-container>
-    <v-row>
-      <v-col cols="12">
-        <v-card flat>
-          <v-row justify="center">
-            <span>
-              <v-divider class="mx-2" vertical></v-divider>
-              Configure
-              <v-icon
-                @click="menuShow"
-                color="green darken-2"
-                class="ml-2 mr-2"
-              >
-                mdi-cog
-              </v-icon>
-              <v-divider class="mx-2" vertical></v-divider>
-              Expand
-              <v-icon
-                @click="expandAll"
-                color="blue darken-2"
-                class="ml-2 mr-2"
-              >
-                mdi-arrow-expand-vertical
-              </v-icon>
-              <v-divider class="mx-2" vertical color="black"></v-divider>
-              Collapse
-              <v-icon
-                @click="collapseAll"
-                color="red darken-2"
-                class="ml-2 mr-2"
-              >
-                mdi-arrow-collapse-vertical
-              </v-icon>
-            </span>
-            <v-divider class="mx-2" vertical></v-divider>
-          </v-row>
-          <v-row v-if="!hidemenu">
-            <v-col
-              cols="2"
-              v-for="h in actualHeader"
-              :key="h.vlaue"
-              v-show="h.value != 'name'"
-            >
-              <v-checkbox
-                v-model="displayHeaders"
-                :value="h.value"
-                :label="h.text"
-              ></v-checkbox>
-            </v-col>
-          </v-row>
-        </v-card>
-      </v-col>
-    </v-row>
-    <v-row>
-      <v-col cols="12">
-        <v-card flat>
-          <v-data-table :items="items" :headers="headers" :search="searchText">
-            <template v-slot:top>
-              <v-toolbar flat>
-                <v-toolbar-title>{{ name }} </v-toolbar-title>
-                <v-divider class="mx-4" inset vertical></v-divider>
-                <v-text-field
-                  v-model="searchText"
-                  class="mx-4 pt-4"
-                  label="search"
-                >
-                </v-text-field>
-                <v-spacer></v-spacer>
-                <dialogelements
-                  :show="dialog"
-                  :item="defaultItem"
-                  formTitle="New"
-                  :edit="false"
-                  :type="type"
-                  @close="close"
-                  @save="save"
-                />
-                <dialogelements
-                  v-if="dialog"
-                  :show="true"
-                  :edit="true"
-                  :item="editedItem"
-                  formTitle="Edit"
-                  :type="type"
-                  @close="close"
-                  @save="save"
-                />
-                <dialogelementdelete
-                  v-if="dialogDelete"
-                  :type="type"
-                  :item="editedItem"
-                  @close="close"
-                />
-              </v-toolbar>
+  <v-data-table
+    :headers="actualHeader"
+    :items="allitems"
+    :items-per-page="10"
+    class="elevation-1"
+    :show-select="false"
+    :hover="true"
+    :density="'comfortable'"
+    :header-props="{
+      class: 'font-weight-bold text-h6 text-white',
+      style: 'background-color: rgb(var(--v-theme-primary))'
+    }"
+  >
+    <template v-slot:header="{ columns }">
+      <tr>
+        <th v-for="column in columns" :key="column.key">
+          {{ column.title }}
+        </th>
+      </tr>
+    </template>
+    <template v-slot:top>
+      <v-toolbar flat>
+        <v-toolbar-title>{{ name }}</v-toolbar-title>
+        <v-divider class="mx-4" inset vertical></v-divider>
+        <v-spacer></v-spacer>
+        <v-dialog v-model="dialog" max-width="500px">
+          <template v-slot:activator="{ props }">
+            <v-btn color="primary" dark v-bind="props"> New Item </v-btn>
+          </template>
+          <v-card>
+            <v-card-title>
+              <span class="text-h5">{{ formTitle }}</span>
+            </v-card-title>
+
+            <v-card-text>
+              <v-container>
+                <v-row>
+                  <v-col cols="12" sm="6" v-for="header in actualHeader" :key="header.key">
+                    <v-text-field
+                      v-if="header.key !== 'actions' && header.key !== 'tags'"
+                      v-model="editedItem[header.key]"
+                      :label="header.title"
+                    ></v-text-field>
+                    <v-combobox
+                      v-if="header.key === 'tags'"
+                      v-model="editedItem[header.key]"
+                      :label="header.title"
+                      multiple
+                      chips
+                      closable-chips
+                      :items="Object.keys(tagColors)"
+                    ></v-combobox>
+                  </v-col>
+                </v-row>
+              </v-container>
+            </v-card-text>
+
+            <v-card-actions>
+              <v-spacer></v-spacer>
+              <v-btn color="blue-darken-1" variant="text" @click="close"> Cancel </v-btn>
+              <v-btn color="blue-darken-1" variant="text" @click="save"> Save </v-btn>
+            </v-card-actions>
+          </v-card>
+        </v-dialog>
+      </v-toolbar>
+    </template>
+    <template v-slot:item.actions="{ item }">
+      <v-menu>
+        <template v-slot:activator="{ props }">
+          <v-btn
+            icon
+            variant="text"
+            color="primary"
+            v-bind="props"
+          >
+            <v-icon>mdi-dots-vertical</v-icon>
+          </v-btn>
+        </template>
+        <v-list>
+          <v-list-item @click="editItem(item)">
+            <template v-slot:prepend>
+              <v-icon>mdi-pencil</v-icon>
             </template>
-            <template #item.name="{ item, header, value }">
-              <div style="display: inline; width: 10px">
-                <!-- style="width: 25px; display: inline-block"> -->
-                <span :style="getPadding(item)">
-                  <v-icon v-if="item.children.length > 0" @click="show(item)">
-                    {{ getIcon(item) }}
-                  </v-icon>
-                  <v-icon v-else color="white">mdi-minus</v-icon>
-                </span>
-                <!-- display: inline; margin-left: 10px"> :style="getPadding(item)"> -->
-                <span>
-                  {{ value }}
-                </span>
-              </div>
+            <v-list-item-title>Edit</v-list-item-title>
+          </v-list-item>
+          <v-list-item @click="deleteItem(item)">
+            <template v-slot:prepend>
+              <v-icon>mdi-delete</v-icon>
             </template>
-            <template #item.actions="{ item }">
-              <v-btn class="primary" small icon dark @click="editItem(item)"
-                ><v-icon small>mdi-pencil</v-icon></v-btn
-              >
-              <v-btn class="primary" small icon dark @click="childItem(item)"
-                ><v-icon small>mdi-repeat</v-icon></v-btn
-              >
-            </template>
-            <template #item.tags="{ item }">
-              <v-btn v-for="t in item.tags" :key="t" small class="primary mx-1">
-                {{ t }}
-              </v-btn>
-            </template>
-          </v-data-table>
-        </v-card>
-      </v-col>
-    </v-row>
-  </v-container>
+            <v-list-item-title>Delete</v-list-item-title>
+          </v-list-item>
+        </v-list>
+      </v-menu>
+    </template>
+    <template v-slot:item.tags="{ item }">
+      <v-chip
+        v-for="tag in item.tags"
+        :key="tag"
+        class="ma-1"
+        :color="getTagColor(tag)"
+        text-color="white"
+        size="small"
+      >
+        {{ tag }}
+      </v-chip>
+    </template>
+  </v-data-table>
 </template>
-<script>
-import dialogelements from "@/components/dialogelements";
-import dialogelementdelete from "@/components/dialogelementdelete";
-export default {
-  components: {
-    dialogelements,
-    dialogelementdelete,
+
+<script setup>
+import { ref, computed, nextTick, onMounted } from 'vue'
+import { useApi } from '~/composables/useApi'
+
+const props = defineProps({
+  actualHeader: {
+    type: Array,
+    required: true
   },
-  props: {
-    actualHeader: Array,
-    allitems: Array,
-    showHeader: Array,
-    name: String,
+  allitems: {
+    type: Array,
+    required: true
+  },
+  defaultItem: {
+    type: Object,
+    required: true
+  },
+  name: {
     type: String,
-    defaultItem: Object,
-    edit: Boolean,
-    del: Boolean,
+    required: true
   },
-  data() {
-    return {
-      displayHeaders: [],
-      hidemenu: true,
-      headers: this.actualHeader,
-      items: [],
-      dialog: false,
-      searchText: "",
-      dialogDelete: false,
-      editedItem: null,
-    };
+  type: {
+    type: String,
+    required: true
   },
-  watch: {
-    displayHeaders(val) {
-      var newHeaders = [];
-      for (var h in this.actualHeader) {
-        if (val.includes(this.actualHeader[h].value)) {
-          newHeaders.push(this.actualHeader[h]);
-        }
-      }
-      this.headers = newHeaders;
-    },
-    allitems(val) {
-      this.expandAll();
-    },
+  edit: {
+    type: Boolean,
+    default: true
   },
-  mounted() {
-    this.displayHeaders = this.showHeader;
-    this.expandAll();
+  del: {
+    type: Boolean,
+    default: true
   },
-  methods: {
-    menuShow(val) {
-      this.hidemenu = !this.hidemenu;
-    },
-    show(item) {
-      if (item.display) {
-        //hide all its childrenren in the sub-tree
-        var allchildren = this.getAllChildren(item, []);
+  endpoint: {
+    type: String,
+    required: true
+  },
+  loadEndpoint: {
+    type: String,
+    required: true
+  }
+})
 
-        for (var c in allchildren) {
-          var ch = allchildren[c];
-          var index_item = this.items.indexOf(ch);
-          if (index_item > -1) {
-            ch.display = false;
-            this.items.splice(index_item, 1);
-          }
-        }
-        item.display = false;
+const emit = defineEmits(['save'])
+
+const dialog = ref(false)
+const editedIndex = ref(-1)
+const editedItem = ref({ ...props.defaultItem })
+const { post, get } = useApi()
+
+const formTitle = computed(() => {
+  return editedIndex.value === -1 ? 'New Item' : 'Edit Item'
+})
+
+const tagColors = {
+  'high': 'error',
+  'medium': 'warning',
+  'low': 'success',
+  'urgent': 'error',
+  'normal': 'info',
+  'completed': 'success',
+  'pending': 'warning',
+  'in-progress': 'info'
+}
+
+function getTagColor(tag) {
+  const lowerTag = tag.toLowerCase()
+  return tagColors[lowerTag] || 'primary'
+}
+
+function editItem(item) {
+  editedIndex.value = props.allitems.indexOf(item)
+  editedItem.value = Object.assign({}, item)
+  dialog.value = true
+}
+
+async function deleteItem(item) {
+  if (confirm('Are you sure you want to delete this item?')) {
+    try {
+      console.log('Deleting item:', item.name)
+      const response = await post('/deleteinterval', { name: item.name })
+      console.log('Delete response:', response)
+      
+      if (response && response.status === 'success') {
+        const index = props.allitems.indexOf(item)
+        props.allitems.splice(index, 1)
+        emit('save')
       } else {
-        // show immidiate childrenren
-        this.expandItem(item, false);
+        console.error('Delete failed:', response)
       }
-    },
-    expandItem(item, all) {
-      var itemIndex = this.items.indexOf(item);
-      for (var c in item.children) {
-        var ch = this.allitems.find((v) => {
-          return v.name == item.children[c];
-        });
-        //console.log("Adding = ", ch.name, "@", itemIndex + 1, ch.display);
-        this.items.splice(itemIndex + 1, 0, ch);
+    } catch (error) {
+      console.error('Error deleting item:', error)
+    }
+  }
+}
 
-        if (all) {
-          itemIndex = this.expandItem(ch, all);
-        } else {
-          itemIndex = itemIndex + 1;
-        }
-      }
-      item.display = true;
-      return itemIndex;
-    },
-    getIcon(item) {
-      if (item.display) {
-        return "mdi-chevron-down";
+function close() {
+  console.log('Closing dialog...')
+  dialog.value = false
+  nextTick(() => {
+    console.log('Resetting form state...')
+    editedItem.value = Object.assign({}, props.defaultItem)
+    editedIndex.value = -1
+  })
+}
+
+async function save() {
+  try {
+    console.log('Starting save process...')
+    // Prepare the interval data
+    const intervalData = {
+      name: editedItem.value.name,
+      duration: editedItem.value.duration,
+      releasedate: editedItem.value.releasedate,
+      parent: editedItem.value.parent,
+      children: editedItem.value.children || [],
+      start: editedItem.value.start,
+      end: editedItem.value.end,
+      tags: editedItem.value.tags || []
+    }
+    console.log('Sending data to endpoint:', props.endpoint, intervalData)
+
+    // Make API call to the provided endpoint
+    const response = await post(props.endpoint, intervalData)
+    console.log('API response:', response)
+    
+    if (response) {
+      console.log('Save successful, updating local data')
+      if (editedIndex.value > -1) {
+        // Update existing item
+        Object.assign(props.allitems[editedIndex.value], editedItem.value)
       } else {
-        return "mdi-chevron-right";
+        // Add new item
+        props.allitems.push(editedItem.value)
       }
-    },
-    getPadding(item) {
-      return "display: inline; margin-left:" + item.padding + "px;";
-    },
+      console.log('Closing dialog and emitting save event')
+      close()
+      emit('save')
+    }
+  } catch (error) {
+    console.error('Error saving interval:', error)
+    // You might want to show an error message to the user here
+  }
+}
 
-    getAllChildren(item, allChildren) {
-      for (var c in item.children) {
-        var childrenItem = this.allitems.find((v) => {
-          return v.name == item.children[c];
-        });
-        if (childrenItem != null) {
-          allChildren.push(childrenItem);
-          this.getAllChildren(childrenItem, allChildren);
-        }
-      }
-      return allChildren;
-    },
-    collapseAll() {
-      this.items.map((v) => {
-        v.display = false;
-      });
+function handleAction(item) {
+  console.log('Action clicked for item:', item)
+}
 
-      this.items = this.allitems.filter((v) => {
-        return v.parent == "";
-      });
-    },
-    expandAll() {
-      this.collapseAll();
-      var parents = this.allitems.filter((v) => {
-        return v.parent == "";
-      });
-      for (var i in parents) {
-        this.expandItem(parents[i], true);
-      }
-    },
-    save() {
-      //console.log("Emmiting Save--- datagrid element");
-      this.$emit("save");
-      this.dialog = false;
-    },
-    close() {
-      //alert("Cancel Called");
-      this.dialog = false;
-      this.dialogDelete = false;
-    },
-    editItem(item) {
-      this.editedItem = Object.assign({}, item);
-      this.dialog = true;
-    },
-    childItem(item) {
-      this.editedItem = Object.assign({}, this.defaultItem);
-      this.editedItem.parent = item.name;
-      this.dialog = true;
-    },
-    delItem(item) {
-      this.editedItem = Object.assign({}, item);
-      //console.log("Deleting", this.editedItem);
-      this.dialogDelete = true;
-    },
-  },
-  computed: {},
-};
+async function loadItems() {
+  try {
+    console.log('Loading items from:', props.loadEndpoint)
+    const response = await get(props.loadEndpoint)
+    console.log('Received items data:', response)
+    if (response) {
+      props.allitems.length = 0 // Clear existing items
+      props.allitems.push(...Object.values(response))
+    }
+  } catch (error) {
+    console.error('Error loading items:', error)
+  }
+}
+
+onMounted(() => {
+  loadItems()
+})
 </script>
+
+<style scoped>
+.v-data-table {
+  background-color: transparent;
+}
+</style> 

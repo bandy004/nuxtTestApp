@@ -1,0 +1,9 @@
+@use 'vuetify/settings' with (
+  $icon-size: 24px,
+  $button-icon-density: ('default': 4, 'comfortable': 2, 'compact': 0),
+  $typography: (
+    'button': (
+      'text-transform': none,
+    ),
+  ),
+); 

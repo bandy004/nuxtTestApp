@@ -1,146 +1,77 @@
 <template>
-  <v-card flat>
-    <v-btn @click="showDep = !showDep" color="primary">Show Dependecy</v-btn>
-    <v-btn @click="reset" color="primary">Reset</v-btn>
-    <v-row>
-      <v-col :cols="displayInterval">
-        <datagrid
-          :actualHeader="invHeaders"
-          :allitems="intervals"
-          :showHeader="showInvHeaders"
-          :defaultItem="defaultItem"
-          name="Intervals"
-          type="I"
-          :edit="true"
-          :del="true"
-          @save="save"
-        />
-      </v-col>
-      <v-col :cols="displayDep" class="mt-12">
-        <simplegrid
-          v-if="showDep"
-          :items="dependencies"
-          :headers="depHeaders"
-          :defaultItem="defaultDep"
-          name="Dependecy"
-          type="D"
-          :edit="false"
-          :del="true"
-          @save="save"
-        />
-      </v-col>
-    </v-row>
-  </v-card>
+  <v-container>
+    <DataGrid
+      :actual-header="actualHeader"
+      :allitems="allitems"
+      :name="'Intervals'"
+      :type="'I'"
+      :default-item="defaultItem"
+      :endpoint="endpoint"
+      :load-endpoint="loadEndpoint"
+      @save="handleSave"
+    />
+  </v-container>
 </template>
-<script>
-import datagrid from "@/components/datagrid";
-import simplegrid from "@/components/simplegrid";
-export default {
-  components: {
-    datagrid,
-    simplegrid,
+
+<script setup>
+import DataGrid from '~/components/datagrid.vue'
+
+const config = useRuntimeConfig()
+const apiBase = config.public.apiBase
+
+const endpoint = '/addinterval'
+const loadEndpoint = '/getintervals'
+
+const defaultItem = {
+  name: '',
+  duration: '',
+  releasedate: '',
+  parent: '',
+  children: [],
+  start: '',
+  end: '',
+  tags: []
+}
+
+const actualHeader = ref([
+  {
+    title: "Name",
+    align: "start",
+    sortable: false,
+    key: "name",
   },
-  data: () => {
-    return {
-      showDep: false,
-      displayInterval: 12,
-      displayDep: 0,
-      invHeaders: [
-        {
-          text: "Name",
-          align: "start",
-          value: "name",
-        },
-        { text: "Parent", value: "parent" },
-        { text: "Realese", value: "releasedate" },
-        { text: "Start", value: "start" },
-        { text: "Duration", value: "duration" },
-        { text: "End", value: "end" },
-        { text: "Actions", value: "actions" },
-      ],
-      depHeaders: [
-        {
-          text: "Name",
-          align: "start",
-          value: "name",
-        },
-        { text: "From", value: "from" },
-        { text: "To", value: "to" },
-        { text: "Actions", value: "actions" },
-      ],
-      intervals: [],
-      dependencies: [],
-      defaultItem: {
-        children: [],
-        duration: 0,
-        end: 0,
-        name: "",
-        parent: "",
-        releasedate: 0,
-        start: 0,
-      },
-      defaultDep: {
-        name: "",
-        from: "",
-        to: "",
-        type: "ES",
-      },
-      showInvHeaders: [],
-      showDepHeaders: [],
-    };
-  },
-  watch: {
-    showDep(val) {
-      if (val) {
-        this.displayInterval = 8;
-        this.displayDep = 4;
-      } else {
-        this.displayInterval = 12;
-      }
-    },
-  },
-  mounted() {
-    this.invHeaders.map((v) => {
-      this.showInvHeaders.push(v["value"]);
-    });
-    this.depHeaders.map((v) => {
-      this.showDepHeaders.push(v["value"]);
-    });
-    this.loadIntervals();
-    this.laodDependencies();
-  },
-  methods: {
-    async loadIntervals() {
-      this.intervals = [];
-      const intervResp = await this.$axios.get(
-        "http://localhost:8000/getintervals"
-      );
-      for (var d in intervResp.data) {
-        //console.log(intervResp.data[d]);
-        this.intervals.push(intervResp.data[d]);
-      }
-    },
-    async laodDependencies() {
-      this.dependencies = [];
-      const depdResp = await this.$axios.get(
-        "http://localhost:8000/getdependencies"
-      );
-      for (var d in depdResp.data) {
-        this.dependencies.push(depdResp.data[d]);
-      }
-    },
-    async reset() {
-      const depdResp = await this.$axios.get("http://localhost:8000/reset");
-      if (depdResp != null) {
-        this.loadIntervals();
-        this.laodDependencies();
-      }
-    },
-    save() {
-      //console.log("Emmiting Save--- int Manager");
-      this.loadIntervals();
-      this.laodDependencies();
-    },
-  },
-};
-</script>
+  { title: "Duration", key: "duration" },
+  { title: "Release Date", key: "releasedate" },
+  { title: "Parent", key: "parent" },
+  { title: "Start", key: "start" },
+  { title: "End", key: "end" },
+  { title: "Tags", key: "tags" },
+  { title: "Actions", key: "actions" },
+])
+
+const allitems = ref([])
+
+async function loadIntervals() {
+  try {
+    console.log('Loading intervals from:', `${apiBase}/getintervals`)
+    const { data } = await useFetch(`${apiBase}/getintervals`)
+    console.log('Received intervals data:', data.value)
+    if (data.value) {
+      allitems.value = Object.values(data.value)
+      console.log('Updated allitems:', allitems.value)
+    }
+  } catch (error) {
+    console.error('Error loading intervals:', error)
+  }
+}
+
+onMounted(() => {
+  console.log('Component mounted, initializing...')
+  loadIntervals()
+})
+
+async function handleSave() {
+  console.log('handleSave called in intervalManager')
+  await loadIntervals()
+}
+</script> 
