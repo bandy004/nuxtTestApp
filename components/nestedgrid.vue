@@ -1,11 +1,10 @@
 <template>
   <v-container>
-      <v-row>
-        <v-col cols="12">
+    <v-row>
+      <v-col cols="12">
         <v-card flat>
           <v-row justify="center">
-            <v-col>
-            <span class="align-center">
+            <span>
               <v-divider class="mx-2" vertical></v-divider>
               Configure
               <v-icon
@@ -33,9 +32,8 @@
               >
                 mdi-arrow-collapse-vertical
               </v-icon>
-              <v-divider class="mx-2" vertical></v-divider>
             </span>
-            </v-col>
+            <v-divider class="mx-2" vertical></v-divider>
           </v-row>
           <v-row v-if="!hidemenu">
             <v-col
@@ -70,19 +68,20 @@
                 </v-text-field>
                 <v-spacer></v-spacer>
                 <dialogelements
+                  :show="dialog"
                   :item="defaultItem"
                   formTitle="New"
                   :edit="false"
                   :type="type"
-                  buttonText="New Item"
                   @close="close"
                   @save="save"
                 />
                 <dialogelements
                   v-if="dialog"
+                  :show="true"
+                  :edit="true"
                   :item="editedItem"
                   formTitle="Edit"
-                  :edit="true"
                   :type="type"
                   @close="close"
                   @save="save"
@@ -130,8 +129,8 @@
   </v-container>
 </template>
 <script>
-import dialogelements from "@/components/dialogelements.vue";
-import dialogelementdelete from "@/components/dialogelementdelete.vue";
+import dialogelements from "@/components/dialogelements";
+import dialogelementdelete from "@/components/dialogelementdelete";
 export default {
   components: {
     dialogelements,
@@ -161,8 +160,6 @@ export default {
   },
   watch: {
     displayHeaders(val) {
-      if (!val || !this.actualHeader) return;
-      
       var newHeaders = [];
       for (var h in this.actualHeader) {
         if (val.includes(this.actualHeader[h].value)) {
@@ -262,35 +259,28 @@ export default {
       }
     },
     save() {
-      console.log('Save called in datagrid')
+      //console.log("Emmiting Save--- datagrid element");
       this.$emit("save");
       this.dialog = false;
     },
     close() {
-      console.log('Close called in datagrid')
+      //alert("Cancel Called");
       this.dialog = false;
       this.dialogDelete = false;
     },
     editItem(item) {
-      console.log('Edit item called:', item)
       this.editedItem = Object.assign({}, item);
       this.dialog = true;
     },
     childItem(item) {
-      console.log('Child item called:', item)
       this.editedItem = Object.assign({}, this.defaultItem);
       this.editedItem.parent = item.name;
       this.dialog = true;
     },
     delItem(item) {
-      console.log('Delete item called:', item)
       this.editedItem = Object.assign({}, item);
+      //console.log("Deleting", this.editedItem);
       this.dialogDelete = true;
-    },
-    openDialog() {
-      console.log('Open dialog called')
-      this.editedItem = Object.assign({}, this.defaultItem);
-      this.dialog = true;
     },
   },
   computed: {},

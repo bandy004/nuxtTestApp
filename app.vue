@@ -30,21 +30,15 @@
       <v-btn icon @click.stop="clipped = !clipped">
         <v-icon>mdi-application</v-icon>
       </v-btn>
-      <v-btn icon @click.stop="fixed = !fixed">
-        <v-icon>mdi-minus</v-icon>
-      </v-btn>
       <v-toolbar-title>{{ title }}</v-toolbar-title>
       <v-spacer />
-      <v-btn icon @click.stop="rightDrawer = !rightDrawer">
-        <v-icon>mdi-menu</v-icon>
-      </v-btn>
     </v-app-bar>
     <v-main>
       <v-container>
         <NuxtPage />
       </v-container>
     </v-main>
-    <v-navigation-drawer v-model="rightDrawer" :right="right" temporary fixed>
+    <v-navigation-drawer v-model="miniVariant" :right="right" temporary fixed>
       <v-list>
         <v-list-item @click="right = !right">
           <template v-slot:prepend>
@@ -61,13 +55,17 @@
 </template>
 
 <script setup>
+import { ref } from 'vue'
+import { useTheme } from '~/composables/useTheme'
+
+const { isDark, toggleTheme } = useTheme()
 const drawer = ref(false)
 const clipped = ref(true)
 const fixed = ref(false)
 const miniVariant = ref(false)
 const right = ref(true)
 const rightDrawer = ref(false)
-const title = ref('Vuetify.js')
+const title = ref('Interval Tree')
 
 const items = ref([
   {
